@@ -68,7 +68,13 @@ func (z *ZipFile) Create(name string) error {
 
 // Add add byte in archive zip
 func (z *ZipFile) Add(name string, file []byte) error {
-	iow, err := z.Writer.Create(name)
+	header := zip.FileHeader{
+		Name:   name,
+		Method: zip.Deflate,
+		Flags:  0x800,
+	}
+	iow, err := z.Writer.CreateHeader(&header)
+
 	if err != nil {
 		return err
 	}
@@ -80,7 +86,13 @@ func (z *ZipFile) Add(name string, file []byte) error {
 
 // AddFile add file from dir in archive
 func (z *ZipFile) AddFile(name string) error {
-	zippedFile, err := z.Writer.Create(name)
+	header := zip.FileHeader{
+		Name:   name,
+		Method: zip.Deflate,
+		Flags:  0x800,
+	}
+	zippedFile, err := z.Writer.CreateHeader(&header)
+
 	if err != nil {
 		return err
 	}
@@ -126,7 +138,7 @@ func (z *ZipFile) AddAll(dir string, includeCurrentFolder bool) error {
 		if err != nil {
 			return err
 		}
-
+		header.Flags = 0x800
 		// If it's a file, set the compression method to deflate (leave directories uncompressed)
 		if !info.IsDir() {
 			header.Method = zip.Deflate
